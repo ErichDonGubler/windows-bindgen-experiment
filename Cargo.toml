@@ -1,0 +1,12 @@
+[package]
+name = "windows-bindgen-experiment"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rayon = "1.5.3"
+windows-bindgen = "0.43.0"
+windows-metadata = "0.43.0"
+tool_lib = { path = "vendor/windows_rs-lib-tool-crate" } # TODO: maybe rename path?
