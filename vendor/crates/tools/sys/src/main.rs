@@ -2,10 +2,6 @@ use rayon::prelude::*;
 use std::collections::*;
 use std::io::prelude::*;
 
-/// Namespaces to exclude from code generation for the `windows-sys` crate.
-const EXCLUDE_NAMESPACES: &[&str] = &["Windows.Win32.System.WinRT.Xaml", "Windows.Win32.Interop", "Windows.Win32.System.Diagnostics.Debug.WebApp", "Windows.Win32.Web"];
-
-// TODO: Force output path spec?
 fn main() {
     let mut rustfmt = true;
     let mut expect_namespace = false;
@@ -45,17 +41,17 @@ fn main() {
                     metadata::reader::Tree {
                         namespace: "Windows.Win32.Graphics",
                         nested: BTreeMap::from([
-                            ("CompositionSwapchain", reader.tree("Windows.Win32.Graphics.CompositionSwapchain", EXCLUDE_NAMESPACES).unwrap()),
-                            ("DXCore", reader.tree("Windows.Win32.Graphics.DXCore", EXCLUDE_NAMESPACES).unwrap()),
-                            ("Direct3D", reader.tree("Windows.Win32.Graphics.Direct3D", EXCLUDE_NAMESPACES).unwrap()),
-                            ("Direct3D11", reader.tree("Windows.Win32.Graphics.Direct3D11", EXCLUDE_NAMESPACES).unwrap()),
-                            ("Direct3D12", reader.tree("Windows.Win32.Graphics.Direct3D12", EXCLUDE_NAMESPACES).unwrap()),
-                            ("DirectComposition", reader.tree("Windows.Win32.Graphics.DirectComposition", EXCLUDE_NAMESPACES).unwrap()),
-                            ("DirectManipulation", reader.tree("Windows.Win32.Graphics.DirectManipulation", EXCLUDE_NAMESPACES).unwrap()),
-                            ("Dwm", reader.tree("Windows.Win32.Graphics.Dwm", EXCLUDE_NAMESPACES).unwrap()),
-                            ("Dxgi", reader.tree("Windows.Win32.Graphics.Dxgi", EXCLUDE_NAMESPACES).unwrap()),
-                            ("Gdi", reader.tree("Windows.Win32.Graphics.Gdi", EXCLUDE_NAMESPACES).unwrap()),
-                            ("Hlsl", reader.tree("Windows.Win32.Graphics.Hlsl", EXCLUDE_NAMESPACES).unwrap()),
+                            ("CompositionSwapchain", reader.tree("Windows.Win32.Graphics.CompositionSwapchain", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("DXCore", reader.tree("Windows.Win32.Graphics.DXCore", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("Direct3D", reader.tree("Windows.Win32.Graphics.Direct3D", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("Direct3D11", reader.tree("Windows.Win32.Graphics.Direct3D11", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("Direct3D12", reader.tree("Windows.Win32.Graphics.Direct3D12", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("DirectComposition", reader.tree("Windows.Win32.Graphics.DirectComposition", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("DirectManipulation", reader.tree("Windows.Win32.Graphics.DirectManipulation", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("Dwm", reader.tree("Windows.Win32.Graphics.Dwm", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("Dxgi", reader.tree("Windows.Win32.Graphics.Dxgi", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("Gdi", reader.tree("Windows.Win32.Graphics.Gdi", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("Hlsl", reader.tree("Windows.Win32.Graphics.Hlsl", &lib::EXCLUDE_NAMESPACES).unwrap()),
                         ]),
                     },
                 )]),
@@ -80,48 +76,34 @@ description = "Rust for Windows"
 repository = "https://github.com/microsoft/windows-rs"
 readme = "../../../docs/readme.md"
 rust-version = "1.49"
-
 [package.metadata.docs.rs]
 default-target = "x86_64-pc-windows-msvc"
 targets = []
 all-features = true
-
 [target.i686-pc-windows-msvc.dependencies]
-windows_i686_msvc = { version = "0.42.0" }
-
+windows_i686_msvc = { path = "../../targets/i686_msvc", version = "0.42.0" }
 [target.i686-uwp-windows-msvc.dependencies]
-windows_i686_msvc = { version = "0.42.0" }
-
+windows_i686_msvc = { path = "../../targets/i686_msvc", version = "0.42.0" }
 [target.x86_64-pc-windows-msvc.dependencies]
-windows_x86_64_msvc = { version = "0.42.0" }
-
+windows_x86_64_msvc = { path = "../../targets/x86_64_msvc", version = "0.42.0" }
 [target.x86_64-uwp-windows-msvc.dependencies]
-windows_x86_64_msvc = { version = "0.42.0" }
-
+windows_x86_64_msvc = { path = "../../targets/x86_64_msvc", version = "0.42.0" }
 [target.aarch64-pc-windows-msvc.dependencies]
-windows_aarch64_msvc = { version = "0.42.0" }
-
+windows_aarch64_msvc = { path = "../../targets/aarch64_msvc", version = "0.42.0" }
 [target.aarch64-uwp-windows-msvc.dependencies]
-windows_aarch64_msvc = { version = "0.42.0" }
-
+windows_aarch64_msvc = { path = "../../targets/aarch64_msvc", version = "0.42.0" }
 [target.aarch64-pc-windows-gnullvm.dependencies]
-windows_aarch64_gnullvm = { version = "0.42.0" }
-
+windows_aarch64_gnullvm = { path = "../../targets/aarch64_gnullvm", version = "0.42.0" }
 [target.i686-pc-windows-gnu.dependencies]
-windows_i686_gnu = { version = "0.42.0" }
-
+windows_i686_gnu = { path = "../../targets/i686_gnu", version = "0.42.0" }
 [target.i686-uwp-windows-gnu.dependencies]
-windows_i686_gnu = { version = "0.42.0" }
-
+windows_i686_gnu = { path = "../../targets/i686_gnu", version = "0.42.0" }
 [target.x86_64-pc-windows-gnu.dependencies]
-windows_x86_64_gnu = { version = "0.42.0" }
-
+windows_x86_64_gnu = { path = "../../targets/x86_64_gnu", version = "0.42.0" }
 [target.x86_64-uwp-windows-gnu.dependencies]
-windows_x86_64_gnu = { version = "0.42.0" }
-
+windows_x86_64_gnu = { path = "../../targets/x86_64_gnu", version = "0.42.0" }
 [target.x86_64-pc-windows-gnullvm.dependencies]
-windows_x86_64_gnullvm = { version = "0.42.0" }
-
+windows_x86_64_gnullvm = { path = "../../targets/x86_64_gnullvm", version = "0.42.0" }
 [features]
 default = []
 deprecated = []

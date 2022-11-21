@@ -14,11 +14,11 @@ fn gen_sys_function(gen: &Gen, def: MethodDef) -> TokenStream {
     let cfg = gen.reader.signature_cfg(&signature);
     let doc = gen.cfg_doc(&cfg);
     let features = gen.cfg_features(&cfg);
-    let return_type = gen.return_sig(&signature);
-    let abi = gen.reader.method_def_extern_abi(def);
-    let impl_map = gen.reader.method_def_impl_map(def).expect("ImplMap not found");
-    let scope = gen.reader.impl_map_scope(impl_map);
-    let link = gen.reader.module_ref_name(scope).to_lowercase();
+    let mut return_type = gen.return_sig(&signature);
+
+    if return_type.is_empty() {
+        return_type = does_not_return(gen, def);
+    }
 
     let params = signature.params.iter().map(|p| {
         let name = gen.param_name(p.def);
@@ -27,8 +27,9 @@ fn gen_sys_function(gen: &Gen, def: MethodDef) -> TokenStream {
     });
 
     quote! {
+        #doc
         #features
-        ::windows_sys::core::link!(#link #abi #doc fn #name(#(#params),*) #return_type);
+        pub fn #name(#(#params),*) #return_type;
     }
 }
 
@@ -44,31 +45,18 @@ fn gen_win_function(gen: &Gen, def: MethodDef) -> TokenStream {
         quote! { #name: #tokens }
     });
 
-    let extern_abi = gen.reader.method_def_extern_abi(def);
     let abi_return_type = gen.return_sig(&signature);
 
-    let link = if let Some(link) = gen.reader.method_def_static_lib(def) {
-        quote! {
-            #[link(name = #link, kind = "static")]
-            extern #extern_abi {
-                fn #name(#(#abi_params),*) #abi_return_type;
-            }
-        }
-    } else {
-        let impl_map = gen.reader.method_def_impl_map(def).expect("ImplMap not found");
-        let scope = gen.reader.impl_map_scope(impl_map);
-        let link = gen.reader.module_ref_name(scope).to_lowercase();
-
-        if gen.namespace.starts_with("Windows.") {
-            quote! {
-                ::windows::core::link!(#link #extern_abi fn #name(#(#abi_params),*) #abi_return_type);
-            }
-        } else {
-            quote! {
-                #[link(name = #link)]
-                extern #extern_abi {
-                    fn #name(#(#abi_params),*) #abi_return_type;
-                }
+    let link_attr = match gen.reader.method_def_static_lib(def) {
+        Some(link) => quote! { #[link(name = #link, kind = "static")] },
+        None => {
+            if gen.namespace.starts_with("Windows.") {
+                quote! { #[cfg_attr(windows, link(name = "windows"))] }
+            } else {
+                let impl_map = gen.reader.method_def_impl_map(def).expect("ImplMap not found");
+                let scope = gen.reader.impl_map_scope(impl_map);
+                let link = gen.reader.module_ref_name(scope).to_lowercase();
+                quote! { #[link(name = #link)] }
             }
         }
     };
@@ -76,6 +64,7 @@ fn gen_win_function(gen: &Gen, def: MethodDef) -> TokenStream {
     let cfg = gen.reader.signature_cfg(&signature);
     let doc = gen.cfg_doc(&cfg);
     let features = gen.cfg_features(&cfg);
+    let extern_abi = gen.reader.method_def_extern_abi(def);
 
     let kind = gen.reader.signature_kind(&signature);
     match kind {
@@ -90,7 +79,10 @@ fn gen_win_function(gen: &Gen, def: MethodDef) -> TokenStream {
                 #features
                 #[inline]
                 pub unsafe fn #name<#generics>(#params) -> ::windows::core::Result<T> #where_clause {
-                    #link
+                    #link_attr
+                    extern #extern_abi {
+                        fn #name(#(#abi_params),*) #abi_return_type;
+                    }
                     let mut result__ = ::core::option::Option::None;
                     #name(#args).and_some(result__)
                 }
@@ -107,7 +99,10 @@ fn gen_win_function(gen: &Gen, def: MethodDef) -> TokenStream {
                 #features
                 #[inline]
                 pub unsafe fn #name<#generics>(#params result__: *mut ::core::option::Option<T>) -> ::windows::core::Result<()> #where_clause {
-                    #link
+                    #link_attr
+                    extern #extern_abi {
+                        fn #name(#(#abi_params),*) #abi_return_type;
+                    }
                     #name(#args).ok()
                 }
             }
@@ -124,7 +119,10 @@ fn gen_win_function(gen: &Gen, def: MethodDef) -> TokenStream {
                 #features
                 #[inline]
                 pub unsafe fn #name<#generics>(#params) -> ::windows::core::Result<#return_type_tokens> #where_clause {
-                    #link
+                    #link_attr
+                    extern #extern_abi {
+                        fn #name(#(#abi_params),*) #abi_return_type;
+                    }
                     let mut result__ = ::core::mem::MaybeUninit::zeroed();
                     #name(#args ::core::mem::transmute(result__.as_mut_ptr())).from_abi::<#return_type_tokens>(result__)
                 }
@@ -139,7 +137,10 @@ fn gen_win_function(gen: &Gen, def: MethodDef) -> TokenStream {
                 #features
                 #[inline]
                 pub unsafe fn #name<#generics>(#params) -> ::windows::core::Result<()> #where_clause {
-                    #link
+                    #link_attr
+                    extern #extern_abi {
+                        fn #name(#(#abi_params),*) #abi_return_type;
+                    }
                     #name(#args).ok()
                 }
             }
@@ -155,7 +156,10 @@ fn gen_win_function(gen: &Gen, def: MethodDef) -> TokenStream {
                     #features
                     #[inline]
                     pub unsafe fn #name<#generics>(#params) -> ::windows::core::Result<#return_type> #where_clause {
-                        #link
+                        #link_attr
+                        extern #extern_abi {
+                            fn #name(#(#abi_params),*) -> #return_type;
+                        }
                         let result__ = #name(#args);
                         (!result__.is_invalid()).then(||result__).ok_or_else(::windows::core::Error::from_win32)
                     }
@@ -169,7 +173,10 @@ fn gen_win_function(gen: &Gen, def: MethodDef) -> TokenStream {
                     #features
                     #[inline]
                     pub unsafe fn #name<#generics>(#params) #abi_return_type #where_clause {
-                        #link
+                        #link_attr
+                        extern #extern_abi {
+                            fn #name(#(#abi_params),*) #abi_return_type;
+                        }
                         #name(#args)
                     }
                 }
@@ -185,7 +192,10 @@ fn gen_win_function(gen: &Gen, def: MethodDef) -> TokenStream {
                 #features
                 #[inline]
                 pub unsafe fn #name<#generics>(#params) #does_not_return #where_clause {
-                    #link
+                    #link_attr
+                    extern #extern_abi {
+                        fn #name(#(#abi_params),*) #does_not_return;
+                    }
                     #name(#args)
                 }
             }

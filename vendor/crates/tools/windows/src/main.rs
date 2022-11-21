@@ -2,8 +2,6 @@ use rayon::prelude::*;
 use std::collections::*;
 use std::io::prelude::*;
 
-const EXCLUDE_NAMESPACES: &[&str] = &["Windows.AI.MachineLearning.Preview", "Windows.ApplicationModel.SocialInfo", "Windows.Devices.AllJoyn", "Windows.Devices.Perception", "Windows.Security.Authentication.Identity.Provider", "Windows.Services.Cortana", "Windows.System.Power.Diagnostics", "Windows.System.Preview", "Windows.UI.Xaml", "Windows.Win32.Interop", "Windows.Win32.System.Diagnostics.Debug.WebApp", "Windows.Win32.System.WinRT.Xaml", "Windows.Win32.Web"];
-
 fn main() {
     let mut rustfmt = true;
     let mut expect_namespace = false;
@@ -42,17 +40,17 @@ fn main() {
                     metadata::reader::Tree {
                         namespace: "Windows.Win32.Graphics",
                         nested: BTreeMap::from([
-                            ("CompositionSwapchain", reader.tree("Windows.Win32.Graphics.CompositionSwapchain", EXCLUDE_NAMESPACES).unwrap()),
-                            ("DXCore", reader.tree("Windows.Win32.Graphics.DXCore", EXCLUDE_NAMESPACES).unwrap()),
-                            ("Direct3D", reader.tree("Windows.Win32.Graphics.Direct3D", EXCLUDE_NAMESPACES).unwrap()),
-                            ("Direct3D11", reader.tree("Windows.Win32.Graphics.Direct3D11", EXCLUDE_NAMESPACES).unwrap()),
-                            ("Direct3D12", reader.tree("Windows.Win32.Graphics.Direct3D12", EXCLUDE_NAMESPACES).unwrap()),
-                            ("DirectComposition", reader.tree("Windows.Win32.Graphics.DirectComposition", EXCLUDE_NAMESPACES).unwrap()),
-                            ("DirectManipulation", reader.tree("Windows.Win32.Graphics.DirectManipulation", EXCLUDE_NAMESPACES).unwrap()),
-                            ("Dwm", reader.tree("Windows.Win32.Graphics.Dwm", EXCLUDE_NAMESPACES).unwrap()),
-                            ("Dxgi", reader.tree("Windows.Win32.Graphics.Dxgi", EXCLUDE_NAMESPACES).unwrap()),
-                            ("Gdi", reader.tree("Windows.Win32.Graphics.Gdi", EXCLUDE_NAMESPACES).unwrap()),
-                            ("Hlsl", reader.tree("Windows.Win32.Graphics.Hlsl", EXCLUDE_NAMESPACES).unwrap()),
+                            ("CompositionSwapchain", reader.tree("Windows.Win32.Graphics.CompositionSwapchain", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("DXCore", reader.tree("Windows.Win32.Graphics.DXCore", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("Direct3D", reader.tree("Windows.Win32.Graphics.Direct3D", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("Direct3D11", reader.tree("Windows.Win32.Graphics.Direct3D11", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("Direct3D12", reader.tree("Windows.Win32.Graphics.Direct3D12", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("DirectComposition", reader.tree("Windows.Win32.Graphics.DirectComposition", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("DirectManipulation", reader.tree("Windows.Win32.Graphics.DirectManipulation", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("Dwm", reader.tree("Windows.Win32.Graphics.Dwm", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("Dxgi", reader.tree("Windows.Win32.Graphics.Dxgi", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("Gdi", reader.tree("Windows.Win32.Graphics.Gdi", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                            ("Hlsl", reader.tree("Windows.Win32.Graphics.Hlsl", &lib::EXCLUDE_NAMESPACES).unwrap()),
                         ]),
                     },
                 )]),
@@ -71,7 +69,7 @@ fn main() {
         r#"
 [package]
 name = "windows"
-version = "0.42.0"
+version = "0.43.0"
 authors = ["Microsoft"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -79,7 +77,7 @@ description = "Rust for Windows"
 repository = "https://github.com/microsoft/windows-rs"
 documentation = "https://microsoft.github.io/windows-docs-rs/"
 readme = "../../../docs/readme.md"
-rust-version = "1.59"
+rust-version = "1.64"
 [package.metadata.docs.rs]
 default-target = "x86_64-pc-windows-msvc"
 targets = []
@@ -108,8 +106,8 @@ windows_x86_64_gnu = { path = "../../targets/x86_64_gnu", version = "0.42.0" }
 [target.x86_64-pc-windows-gnullvm.dependencies]
 windows_x86_64_gnullvm = { path = "../../targets/x86_64_gnullvm", version = "0.42.0" }
 [dependencies]
-windows-implement = { path = "../implement",  version = "0.42.0", optional = true }
-windows-interface = { path = "../interface",  version = "0.42.0", optional = true }
+windows-implement = { path = "../implement",  version = "0.43.0", optional = true }
+windows-interface = { path = "../interface",  version = "0.43.0", optional = true }
 [features]
 default = []
 deprecated = []
@@ -138,7 +136,6 @@ interface = ["windows-interface"]
 # UNSTABLE FEATURES (requires Rust nightly)
 # Enable to use the #[debugger_visualizer] attribute.
 debugger_visualizer = []
-
 "#
         .as_bytes(),
     )

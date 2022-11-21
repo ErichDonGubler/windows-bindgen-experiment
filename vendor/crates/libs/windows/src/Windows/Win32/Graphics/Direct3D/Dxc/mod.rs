@@ -4,7 +4,10 @@ pub unsafe fn DxcCreateInstance<T>(rclsid: *const ::windows::core::GUID) -> ::wi
 where
     T: ::windows::core::Interface,
 {
-    ::windows::core::link ! ( "dxcompiler.dll""system" fn DxcCreateInstance ( rclsid : *const :: windows::core::GUID , riid : *const :: windows::core::GUID , ppv : *mut *mut ::core::ffi::c_void ) -> :: windows::core::HRESULT );
+    #[cfg_attr(windows, link(name = "windows"))]
+    extern "system" {
+        fn DxcCreateInstance(rclsid: *const ::windows::core::GUID, riid: *const ::windows::core::GUID, ppv: *mut *mut ::core::ffi::c_void) -> ::windows::core::HRESULT;
+    }
     let mut result__ = ::core::option::Option::None;
     DxcCreateInstance(::core::mem::transmute(rclsid), &<T as ::windows::core::Interface>::IID, &mut result__ as *mut _ as *mut _).and_some(result__)
 }
@@ -16,7 +19,10 @@ where
     P0: ::std::convert::Into<::windows::core::InParam<'a, super::super::super::System::Com::IMalloc>>,
     T: ::windows::core::Interface,
 {
-    ::windows::core::link ! ( "dxcompiler.dll""system" fn DxcCreateInstance2 ( pmalloc : * mut::core::ffi::c_void , rclsid : *const :: windows::core::GUID , riid : *const :: windows::core::GUID , ppv : *mut *mut ::core::ffi::c_void ) -> :: windows::core::HRESULT );
+    #[cfg_attr(windows, link(name = "windows"))]
+    extern "system" {
+        fn DxcCreateInstance2(pmalloc: *mut ::core::ffi::c_void, rclsid: *const ::windows::core::GUID, riid: *const ::windows::core::GUID, ppv: *mut *mut ::core::ffi::c_void) -> ::windows::core::HRESULT;
+    }
     let mut result__ = ::core::option::Option::None;
     DxcCreateInstance2(pmalloc.into().abi(), ::core::mem::transmute(rclsid), &<T as ::windows::core::Interface>::IID, &mut result__ as *mut _ as *mut _).and_some(result__)
 }
@@ -1776,7 +1782,7 @@ unsafe impl ::windows::core::Abi for DxcArgPair {
 }
 impl ::core::cmp::PartialEq for DxcArgPair {
     fn eq(&self, other: &Self) -> bool {
-        self.pName == other.pName && self.pValue == other.pValue
+        unsafe { ::windows::core::memcmp(self as *const _ as _, other as *const _ as _, core::mem::size_of::<DxcArgPair>()) == 0 }
     }
 }
 impl ::core::cmp::Eq for DxcArgPair {}
@@ -1808,7 +1814,7 @@ unsafe impl ::windows::core::Abi for DxcBuffer {
 }
 impl ::core::cmp::PartialEq for DxcBuffer {
     fn eq(&self, other: &Self) -> bool {
-        self.Ptr == other.Ptr && self.Size == other.Size && self.Encoding == other.Encoding
+        unsafe { ::windows::core::memcmp(self as *const _ as _, other as *const _ as _, core::mem::size_of::<DxcBuffer>()) == 0 }
     }
 }
 impl ::core::cmp::Eq for DxcBuffer {}
@@ -1839,7 +1845,7 @@ unsafe impl ::windows::core::Abi for DxcDefine {
 }
 impl ::core::cmp::PartialEq for DxcDefine {
     fn eq(&self, other: &Self) -> bool {
-        self.Name == other.Name && self.Value == other.Value
+        unsafe { ::windows::core::memcmp(self as *const _ as _, other as *const _ as _, core::mem::size_of::<DxcDefine>()) == 0 }
     }
 }
 impl ::core::cmp::Eq for DxcDefine {}
@@ -1870,7 +1876,7 @@ unsafe impl ::windows::core::Abi for DxcShaderHash {
 }
 impl ::core::cmp::PartialEq for DxcShaderHash {
     fn eq(&self, other: &Self) -> bool {
-        self.Flags == other.Flags && self.HashDigest == other.HashDigest
+        unsafe { ::windows::core::memcmp(self as *const _ as _, other as *const _ as _, core::mem::size_of::<DxcShaderHash>()) == 0 }
     }
 }
 impl ::core::cmp::Eq for DxcShaderHash {}

@@ -4,7 +4,6 @@ mod array;
 mod as_impl;
 pub(crate) mod bindings;
 mod borrowed;
-mod compose;
 mod delay_load;
 mod error;
 mod event;
@@ -35,8 +34,6 @@ pub use array::*;
 #[doc(hidden)]
 pub use as_impl::*;
 pub use borrowed::*;
-#[doc(hidden)]
-pub use compose::*;
 pub(crate) use delay_load::*;
 pub use error::*;
 pub use event::*;
@@ -68,7 +65,7 @@ pub use weak::*;
 pub use weak_ref_count::*;
 
 /// A specialized [`Result`] type that provides Windows error information.
-pub type Result<T> = core::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[doc(hidden)]
 pub use bindings::IAgileObject;
@@ -83,7 +80,7 @@ pub use windows_interface::interface;
 
 extern "C" {
     #[doc(hidden)]
-    pub fn memcmp(left: *const core::ffi::c_void, right: *const core::ffi::c_void, len: usize) -> i32;
+    pub fn memcmp(left: *const std::ffi::c_void, right: *const std::ffi::c_void, len: usize) -> i32;
 }
 
 #[doc(hidden)]
@@ -98,3 +95,32 @@ fn wide_trim_end(mut wide: &[u16]) -> &[u16] {
     }
     wide
 }
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! interface_hierarchy {
+    ($child:ty, $parent:ty) => {
+        impl ::std::convert::From<$child> for $parent {
+            fn from(value: $child) -> Self {
+                unsafe { ::std::mem::transmute(value) }
+            }
+        }
+        impl ::std::convert::From<&$child> for &$parent {
+            fn from(value: &$child) -> Self {
+                unsafe { ::std::mem::transmute(value) }
+            }
+        }
+        impl ::std::convert::From<&$child> for $parent {
+            fn from(value: &$child) -> Self {
+                unsafe { ::std::mem::transmute(::std::clone::Clone::clone(value)) }
+            }
+        }
+    };
+    ($child:ty, $first:ty, $($rest:ty),+) => {
+        $crate::core::interface_hierarchy!($child, $first);
+        $crate::core::interface_hierarchy!($child, $($rest),+);
+    };
+}
+
+#[doc(hidden)]
+pub use interface_hierarchy;

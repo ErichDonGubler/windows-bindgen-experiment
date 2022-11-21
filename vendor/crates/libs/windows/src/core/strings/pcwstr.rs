@@ -12,12 +12,12 @@ impl PCWSTR {
     }
 
     /// Construct a null `PCWSTR`
-    pub fn null() -> Self {
-        Self(core::ptr::null())
+    pub const fn null() -> Self {
+        Self(std::ptr::null())
     }
 
     /// Returns a raw pointer to the `PCWSTR`
-    pub fn as_ptr(&self) -> *const u16 {
+    pub const fn as_ptr(&self) -> *const u16 {
         self.0
     }
 
@@ -41,7 +41,7 @@ impl PCWSTR {
     /// # Safety
     ///
     /// See the safety information for `PCWSTR::as_wide`.
-    pub unsafe fn to_string(&self) -> core::result::Result<String, std::string::FromUtf16Error> {
+    pub unsafe fn to_string(&self) -> std::result::Result<String, std::string::FromUtf16Error> {
         String::from_utf16(self.as_wide())
     }
 
@@ -50,8 +50,8 @@ impl PCWSTR {
     /// # Safety
     ///
     /// See the safety information for `PCWSTR::as_wide`.
-    pub unsafe fn display<'a>(&'a self) -> impl core::fmt::Display + 'a {
-        Decode(move || core::char::decode_utf16(self.as_wide().iter().cloned()))
+    pub unsafe fn display(&self) -> impl std::fmt::Display + '_ {
+        Decode(move || std::char::decode_utf16(self.as_wide().iter().cloned()))
     }
 }
 

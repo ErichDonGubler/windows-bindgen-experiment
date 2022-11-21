@@ -491,9 +491,6 @@ impl<'a> Reader<'a> {
     pub fn method_def_does_not_return(&self, row: MethodDef) -> bool {
         self.method_def_attributes(row).any(|attribute| self.attribute_name(attribute) == "DoesNotReturnAttribute")
     }
-    pub fn method_def_can_return_multiple_success_values(&self, row: MethodDef) -> bool {
-        self.method_def_attributes(row).any(|attribute| self.attribute_name(attribute) == "CanReturnMultipleSuccessValuesAttribute")
-    }
     pub fn method_def_special_name(&self, row: MethodDef) -> String {
         let name = self.method_def_name(row);
         if self.method_def_flags(row).special() {
@@ -947,31 +944,6 @@ impl<'a> Reader<'a> {
             false
         }
     }
-    pub fn type_def_has_callback(&self, row: TypeDef) -> bool {
-        if self.type_def_is_callback(row) {
-            return true;
-        }
-        if self.type_def_kind(row) != TypeKind::Struct {
-            return false;
-        }
-        fn check(reader: &Reader, row: TypeDef) -> bool {
-            if reader.type_def_fields(row).any(|field| reader.type_has_callback(&reader.field_type(field, Some(row)))) {
-                return true;
-            }
-            false
-        }
-        let type_name = self.type_def_type_name(row);
-        if type_name.namespace.is_empty() {
-            check(self, row)
-        } else {
-            for row in self.get(type_name) {
-                if check(self, row) {
-                    return true;
-                }
-            }
-            false
-        }
-    }
     pub fn type_def_guid(&self, row: TypeDef) -> Option<GUID> {
         for attribute in self.type_def_attributes(row) {
             if self.attribute_name(attribute) == "GuidAttribute" {
@@ -1104,9 +1076,9 @@ impl<'a> Reader<'a> {
     fn type_def_interface_signature(&self, row: TypeDef, generics: &[Type]) -> String {
         let guid = self.type_def_guid(row).unwrap();
         if generics.is_empty() {
-            format!("{{{guid:#?}}}")
+            format!("{{{:#?}}}", guid)
         } else {
-            let mut result = format!("pinterface({{{guid:#?}}}");
+            let mut result = format!("pinterface({{{:#?}}}", guid);
             for generic in generics {
                 result.push(';');
                 result.push_str(&self.type_signature(generic));
@@ -1287,10 +1259,10 @@ impl<'a> Reader<'a> {
             return false;
         }
         // TODO: find a way to treat this like COM interface result values.
-        !self.type_is_callback(&param.ty.deref())
+        !self.type_is_callback(&param.ty)
     }
     pub fn signature_kind(&self, signature: &Signature) -> SignatureKind {
-        if self.method_def_can_return_multiple_success_values(signature.def) {
+        if self.method_def_impl_flags(signature.def).preserve_sig() {
             return SignatureKind::PreserveSig;
         }
         if let Some(return_type) = &signature.return_type {
@@ -1483,13 +1455,6 @@ impl<'a> Reader<'a> {
             _ => false,
         }
     }
-    pub fn type_has_callback(&self, ty: &Type) -> bool {
-        match ty {
-            Type::TypeDef((row, _)) => self.type_def_has_callback(*row),
-            Type::Win32Array((ty, _)) => self.type_has_callback(ty),
-            _ => false,
-        }
-    }
     fn type_from_ref(&self, code: TypeDefOrRef, enclosing: Option<TypeDef>, generics: &[Type]) -> Type {
         if let TypeDefOrRef::TypeSpec(def) = code {
             let mut blob = self.type_spec_signature(def);
@@ -1644,7 +1609,15 @@ impl<'a> Reader<'a> {
     }
     pub fn type_is_callback(&self, ty: &Type) -> bool {
         match ty {
+            // TODO: do we need to know there's a callback behind the pointer?
+            Type::ConstPtr((ty, _)) | Type::MutPtr((ty, _)) => self.type_is_callback(ty),
             Type::TypeDef((row, _)) => self.type_def_is_callback(*row),
+            _ => false,
+        }
+    }
+    pub fn type_is_callback_array(&self, ty: &Type) -> bool {
+        match ty {
+            Type::Win32Array((ty, _)) => self.type_is_callback(ty),
             _ => false,
         }
     }
@@ -1678,6 +1651,7 @@ impl<'a> Reader<'a> {
     }
 }
 
-pub const REMAP_TYPES: [(TypeName, TypeName); 2] = [(TypeName::D2D_MATRIX_3X2_F, TypeName::Matrix3x2), (TypeName::D3DMATRIX, TypeName::Matrix4x4)];
+// TODO: exclude code gen for all types that are in REMAP_TYPES
+const REMAP_TYPES: [(TypeName, TypeName); 1] = [(TypeName::D2D_MATRIX_3X2_F, TypeName::Matrix3x2)];
 
 pub const CORE_TYPES: [(TypeName, Type); 12] = [(TypeName::GUID, Type::GUID), (TypeName::IUnknown, Type::IUnknown), (TypeName::HResult, Type::HRESULT), (TypeName::HRESULT, Type::HRESULT), (TypeName::HSTRING, Type::String), (TypeName::BSTR, Type::BSTR), (TypeName::IInspectable, Type::IInspectable), (TypeName::LARGE_INTEGER, Type::I64), (TypeName::ULARGE_INTEGER, Type::U64), (TypeName::PSTR, Type::PSTR), (TypeName::PWSTR, Type::PWSTR), (TypeName::Type, Type::TypeName)];

@@ -4,7 +4,10 @@ pub unsafe fn CreatePresentationFactory<'a, P0>(d3ddevice: P0, riid: *const ::wi
 where
     P0: ::std::convert::Into<::windows::core::InParam<'a, ::windows::core::IUnknown>>,
 {
-    ::windows::core::link ! ( "dcomp.dll""system" fn CreatePresentationFactory ( d3ddevice : * mut::core::ffi::c_void , riid : *const :: windows::core::GUID , presentationfactory : *mut *mut ::core::ffi::c_void ) -> :: windows::core::HRESULT );
+    #[cfg_attr(windows, link(name = "windows"))]
+    extern "system" {
+        fn CreatePresentationFactory(d3ddevice: *mut ::core::ffi::c_void, riid: *const ::windows::core::GUID, presentationfactory: *mut *mut ::core::ffi::c_void) -> ::windows::core::HRESULT;
+    }
     CreatePresentationFactory(d3ddevice.into().abi(), ::core::mem::transmute(riid), ::core::mem::transmute(presentationfactory)).ok()
 }
 #[doc = "*Required features: `\"Win32_Graphics_CompositionSwapchain\"`*"]
@@ -674,7 +677,7 @@ unsafe impl ::windows::core::Abi for CompositionFrameDisplayInstance {
 #[cfg(all(feature = "Win32_Foundation", feature = "Win32_Graphics_Dxgi_Common"))]
 impl ::core::cmp::PartialEq for CompositionFrameDisplayInstance {
     fn eq(&self, other: &Self) -> bool {
-        self.displayAdapterLUID == other.displayAdapterLUID && self.displayVidPnSourceId == other.displayVidPnSourceId && self.displayUniqueId == other.displayUniqueId && self.renderAdapterLUID == other.renderAdapterLUID && self.instanceKind == other.instanceKind && self.finalTransform == other.finalTransform && self.requiredCrossAdapterCopy == other.requiredCrossAdapterCopy && self.colorSpace == other.colorSpace
+        unsafe { ::windows::core::memcmp(self as *const _ as _, other as *const _ as _, core::mem::size_of::<CompositionFrameDisplayInstance>()) == 0 }
     }
 }
 #[cfg(all(feature = "Win32_Foundation", feature = "Win32_Graphics_Dxgi_Common"))]
@@ -711,7 +714,7 @@ unsafe impl ::windows::core::Abi for PresentationTransform {
 }
 impl ::core::cmp::PartialEq for PresentationTransform {
     fn eq(&self, other: &Self) -> bool {
-        self.M11 == other.M11 && self.M12 == other.M12 && self.M21 == other.M21 && self.M22 == other.M22 && self.M31 == other.M31 && self.M32 == other.M32
+        unsafe { ::windows::core::memcmp(self as *const _ as _, other as *const _ as _, core::mem::size_of::<PresentationTransform>()) == 0 }
     }
 }
 impl ::core::cmp::Eq for PresentationTransform {}
@@ -741,7 +744,7 @@ unsafe impl ::windows::core::Abi for SystemInterruptTime {
 }
 impl ::core::cmp::PartialEq for SystemInterruptTime {
     fn eq(&self, other: &Self) -> bool {
-        self.value == other.value
+        unsafe { ::windows::core::memcmp(self as *const _ as _, other as *const _ as _, core::mem::size_of::<SystemInterruptTime>()) == 0 }
     }
 }
 impl ::core::cmp::Eq for SystemInterruptTime {}
