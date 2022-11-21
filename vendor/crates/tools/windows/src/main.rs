@@ -35,25 +35,16 @@ fn main() {
             "Win32",
             metadata::reader::Tree {
                 namespace: "Windows.Win32",
-                nested: BTreeMap::from([(
-                    "Graphics",
-                    metadata::reader::Tree {
-                        namespace: "Windows.Win32.Graphics",
-                        nested: BTreeMap::from([
-                            ("CompositionSwapchain", reader.tree("Windows.Win32.Graphics.CompositionSwapchain", &lib::EXCLUDE_NAMESPACES).unwrap()),
-                            ("DXCore", reader.tree("Windows.Win32.Graphics.DXCore", &lib::EXCLUDE_NAMESPACES).unwrap()),
-                            ("Direct3D", reader.tree("Windows.Win32.Graphics.Direct3D", &lib::EXCLUDE_NAMESPACES).unwrap()),
-                            ("Direct3D11", reader.tree("Windows.Win32.Graphics.Direct3D11", &lib::EXCLUDE_NAMESPACES).unwrap()),
-                            ("Direct3D12", reader.tree("Windows.Win32.Graphics.Direct3D12", &lib::EXCLUDE_NAMESPACES).unwrap()),
-                            ("DirectComposition", reader.tree("Windows.Win32.Graphics.DirectComposition", &lib::EXCLUDE_NAMESPACES).unwrap()),
-                            ("DirectManipulation", reader.tree("Windows.Win32.Graphics.DirectManipulation", &lib::EXCLUDE_NAMESPACES).unwrap()),
-                            ("Dwm", reader.tree("Windows.Win32.Graphics.Dwm", &lib::EXCLUDE_NAMESPACES).unwrap()),
-                            ("Dxgi", reader.tree("Windows.Win32.Graphics.Dxgi", &lib::EXCLUDE_NAMESPACES).unwrap()),
-                            ("Gdi", reader.tree("Windows.Win32.Graphics.Gdi", &lib::EXCLUDE_NAMESPACES).unwrap()),
-                            ("Hlsl", reader.tree("Windows.Win32.Graphics.Hlsl", &lib::EXCLUDE_NAMESPACES).unwrap()),
-                        ]),
-                    },
-                )]),
+                nested: BTreeMap::from([
+                    ("Foundation", reader.tree("Windows.Win32.Foundation", &lib::EXCLUDE_NAMESPACES).unwrap()),
+                    (
+                        "System",
+                        metadata::reader::Tree {
+                            namespace: "Windows.Win32.System",
+                            nested: BTreeMap::from([("LibraryLoader", reader.tree("Windows.Win32.System.LibraryLoader", &lib::EXCLUDE_NAMESPACES).unwrap()), ("SystemServices", reader.tree("Windows.Win32.System.SystemServices", &lib::EXCLUDE_NAMESPACES).unwrap()), ("WindowsProgramming", reader.tree("Windows.Win32.System.WindowsProgramming", &lib::EXCLUDE_NAMESPACES).unwrap())]),
+                        },
+                    ),
+                ]),
             },
         )])
         .into_iter()
