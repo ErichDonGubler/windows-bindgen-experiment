@@ -36,15 +36,31 @@ fn main() {
     // TODO: Make this a function, this is hecka tedious!
     let root = metadata::reader::Tree {
         namespace: "Windows",
-        nested: vec![(
+        nested: BTreeMap::from([(
             "Win32",
             metadata::reader::Tree {
                 namespace: "Windows.Win32",
-                nested: BTreeMap::from([("Graphics", reader.tree("Windows.Win32.Graphics", EXCLUDE_NAMESPACES).unwrap())]).into_iter().collect(),
+                nested: BTreeMap::from([(
+                    "Graphics",
+                    metadata::reader::Tree {
+                        namespace: "Windows.Win32.Graphics",
+                        nested: BTreeMap::from([
+                            ("CompositionSwapchain", reader.tree("Windows.Win32.Graphics.CompositionSwapchain", EXCLUDE_NAMESPACES).unwrap()),
+                            ("DXCore", reader.tree("Windows.Win32.Graphics.DXCore", EXCLUDE_NAMESPACES).unwrap()),
+                            ("Direct3D", reader.tree("Windows.Win32.Graphics.Direct3D", EXCLUDE_NAMESPACES).unwrap()),
+                            ("Direct3D11", reader.tree("Windows.Win32.Graphics.Direct3D11", EXCLUDE_NAMESPACES).unwrap()),
+                            ("Direct3D12", reader.tree("Windows.Win32.Graphics.Direct3D12", EXCLUDE_NAMESPACES).unwrap()),
+                            ("DirectComposition", reader.tree("Windows.Win32.Graphics.DirectComposition", EXCLUDE_NAMESPACES).unwrap()),
+                            ("DirectManipulation", reader.tree("Windows.Win32.Graphics.DirectManipulation", EXCLUDE_NAMESPACES).unwrap()),
+                            ("Dwm", reader.tree("Windows.Win32.Graphics.Dwm", EXCLUDE_NAMESPACES).unwrap()),
+                            ("Dxgi", reader.tree("Windows.Win32.Graphics.Dxgi", EXCLUDE_NAMESPACES).unwrap()),
+                            ("Gdi", reader.tree("Windows.Win32.Graphics.Gdi", EXCLUDE_NAMESPACES).unwrap()),
+                            ("Hlsl", reader.tree("Windows.Win32.Graphics.Hlsl", EXCLUDE_NAMESPACES).unwrap()),
+                        ]),
+                    },
+                )]),
             },
-        )]
-        .into_iter()
-        .collect(),
+        )]),
     };
     let trees = root.flatten();
     trees.par_iter().for_each(|tree| gen_tree(reader, &output, tree, rustfmt));
